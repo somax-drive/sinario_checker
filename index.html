@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーV 究極解析ツール</title>
+    <title>モンキーV シナリオ解析ツール</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; --selected: #00e676; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 150px; }
         .card { background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
         h3 { margin: 0 0 8px 0; color: var(--accent); font-size: 14px; border-left: 4px solid var(--accent); padding-left: 8px; }
-        
         .set-header { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #fff; }
-
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
         .lamp-grid { grid-template-columns: repeat(6, 1fr); margin-top: 10px; }
-        
         .btn-img { 
             background: #222; border: 2px solid #333; border-radius: 6px; 
             aspect-ratio: 1 / 1; transition: 0.1s;
@@ -24,18 +21,12 @@
         .btn-img::after { content: ""; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.3); }
         .btn-img.active { border-color: var(--selected); transform: scale(0.95); }
         .btn-img.active::after { background: transparent; }
-
         .lamp-btn { height: 35px; border-radius: 4px; border: 2px solid transparent; }
         .lamp-btn.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 8px var(--selected); }
-
-        .footer-tools { 
-            position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; 
-            padding: 10px 15px; border-top: 2px solid var(--accent); z-index: 100;
-        }
+        .footer-tools { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 10px 15px; border-top: 2px solid var(--accent); z-index: 100; }
         .main-btn { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; margin-bottom: 8px; }
         .tool-bar { display: flex; justify-content: space-between; gap: 8px; }
         .sub-btn { background: #333; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 12px; flex: 1; }
-        
         .res-flex { display: flex; overflow-x: auto; gap: 12px; margin-top: 5px; padding-bottom: 5px; }
         .res-item { min-width: 75px; text-align: center; }
         .res-name { font-size: 10px; color: #888; white-space: nowrap; }
@@ -43,31 +34,22 @@
     </style>
 </head>
 <body>
-
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>基本設定</h3>
         <select id="helmet" onchange="calculate()" style="background:#222; color:#fff; border:none; padding:5px; border-radius:4px;">
-            <option value="normal">通常</option>
-            <option value="douguchi">洞口ヘル</option>
-            <option value="monokurohatano">モノクロヘル</option>
+            <option value="normal">通常</option><option value="douguchi">洞口ヘル</option><option value="monokurohatano">モノクロヘル</option>
         </select>
         <button onclick="resetAll()" style="background:none; border:1px solid #444; color:#888; font-size:11px; padding:4px 8px; border-radius:4px;">リセット</button>
     </div>
 </div>
-
 <div id="set-container"></div>
-
 <div class="footer-tools">
     <div id="confirm-area" style="text-align:center; font-size:12px; margin-bottom:5px;"></div>
     <div class="res-flex" id="results"></div>
     <button class="main-btn" onclick="calculate()">推測を実行</button>
-    <div class="tool-bar">
-        <button class="sub-btn" onclick="addSetUI()">セットを追加</button>
-        <button class="sub-btn" onclick="removeLastSet()">１つ削除</button>
-    </div>
+    <div class="tool-bar"><button class="sub-btn" onclick="addSetUI()">セットを追加</button><button class="sub-btn" onclick="removeLastSet()">１つ削除</button></div>
 </div>
-
 <script>
 const SCENARIOS = [
     { id: 1, name: "駆け出し", p: 13.9, map: [0, 4, 0, 4, 0, 4, 2, 5] },
@@ -85,14 +67,12 @@ const SCENARIOS = [
     { id: 13, name: "逆襲の艇王", p: 0.8, map: [5, 0, 5, 5, 5, 5, 5, 5] },
     { id: 14, name: "艇王", p: 0.8, map: [5, 5, 5, 5, 5, 5, 5, 5] }
 ];
-
 const SCREENS = [
     {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口'}, {id:'gamou', n:'蒲生'}, {id:'hamaoka', n:'浜岡'},
     {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'親父'}, {id:'arisa', n:'ありさ'}, {id:'kakotachi', n:'香子'}, {id:'aoshima', n:'青島'},
     {id:'kusidatachi', n:'櫛田'}, {id:'sumi', n:'澄'}, {id:'sensyusyuugou', n:'集合'}, {id:'hatanoke', n:'家'}, {id:'82kisei', n:'82期'},
     {id:'joseisyuugou', n:'女集'}, {id:'monokurohatano', n:'M波'}, {id:'monokuroenoki', n:'M榎'}, {id:'hatanosumi', n:'波澄'}
 ];
-
 const SCREEN_PROBS = {
     hatano:[15,15,10.5,30,7.5,19,7.5,4.5,6.5,5,3,12.5,1.5,3.5], enoki:[15,15,7,8.5,6.5,7.5,5.5,5,4.5,5,3,1,50,15],
     douguchi:[14,14,9.5,9.5,8,8,7.5,27.5,7.5,5,10,1,1,3.5], gamou:[14,14,9.5,9.5,8,8,7.5,4.5,6.5,32.5,3,1,1,3.5],
@@ -106,16 +86,13 @@ const SCREEN_PROBS = {
 };
 const REQ = { arisa:2, kakotachi:2, aoshima:2, kusidatachi:3, sensyusyuugou:3, hatanoke:3, '82kisei':4 };
 const LAMPS = [ {v:0, c:'#fff'}, {v:1, c:'#2196f3'}, {v:2, c:'#ffeb3b'}, {v:3, c:'#4caf50'}, {v:4, c:'#f44336'}, {v:5, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)'} ];
-
 let userInputs = [];
-
 function addSetUI() {
     if (userInputs.length >= 8) return;
     const i = userInputs.length;
     userInputs.push({ screen: null, lamp: null });
     const div = document.createElement('div');
-    div.className = 'card';
-    div.id = `set-card-${i}`;
+    div.className = 'card'; div.id = `set-card-${i}`;
     div.innerHTML = `
         <div class="set-header">第 ${i+1} セット</div>
         <div class="grid">${SCREENS.map(s => `<div class="btn-img" id="s-${i}-${s.id}" style="background-image: url('start_screen/${s.id}.webp');" onclick="setVal(${i},'screen','${s.id}')"></div>`).join('')}</div>
@@ -124,49 +101,33 @@ function addSetUI() {
     document.getElementById('set-container').appendChild(div);
     window.scrollTo(0, document.body.scrollHeight);
 }
-
-function removeLastSet() {
-    if (userInputs.length <= 1) return;
-    userInputs.pop();
-    const container = document.getElementById('set-container');
-    container.removeChild(container.lastChild);
-}
-
+function removeLastSet() { if (userInputs.length <= 1) return; userInputs.pop(); const c = document.getElementById('set-container'); c.removeChild(c.lastChild); }
 function setVal(idx, type, val) {
     if (userInputs[idx][type] === val) userInputs[idx][type] = null;
     else userInputs[idx][type] = val;
     document.querySelectorAll(`[id^="${type[0]}-${idx}-"]`).forEach(el => el.classList.remove('active'));
     if (userInputs[idx][type] !== null) document.getElementById(`${type[0]}-${idx}-${val}`).classList.add('active');
 }
-
 function calculate() {
     const mode = document.getElementById('helmet').value;
     let probs = SCENARIOS.map(s => {
-        let b = s.p;
-        const sid = s.id;
-        // 洞口ヘル条件: ギャンブラー(6)以上 かつ ヒロイン(9)否定
-        if (mode === 'douguchi') {
-            if (sid < 6 || sid === 9) b = 0;
-        }
-        // モノクロヘル条件: B2(12) or 艇王(14)
-        else if (mode === 'monokurohatano') {
-            if (sid !== 12 && sid !== 14) b = 0;
-        }
+        let b = s.p; const sid = s.id;
+        if (mode === 'douguchi') { if (sid < 6 || sid === 9) b = 0; }
+        else if (mode === 'monokurohatano') { if (sid !== 12 && sid !== 14) b = 0; }
         return b;
     });
-
     for (let i = 0; i < userInputs.length; i++) {
-        const input = userInputs[i];
-        const sKey = input.screen; const lVal = input.lamp;
-        const sArray = sKey ? SCREEN_PROBS[sKey] : null;
-        const r = sKey ? (REQ[sKey] || 0) : 0;
+        const input = userInputs[i]; const sKey = input.screen; const lVal = input.lamp;
+        const sArray = sKey ? SCREEN_PROBS[sKey] : null; const r = sKey ? (REQ[sKey] || 0) : 0;
         probs = probs.map((p, si) => {
             if (p === 0) return 0;
             const sid = SCENARIOS[si].id; const mapVal = SCENARIOS[si].map[i];
+            // 虹ランプ(5)の特殊確定ロジック
             if (lVal === 5) {
                 if (i === 0 && sid !== 14) return 0;
                 if (i === 1 && sid !== 12 && sid !== 14) return 0;
-                if (i >= 2 && sid !== 12 && sid !== 13 && sid !== 14) return 0;
+                // 8枚目(i===7)以外で虹ならB2,逆襲,艇王
+                if (i >= 2 && i < 7 && (sid !== 12 && sid !== 13 && sid !== 14)) return 0;
             }
             if (sKey && sArray[si] === 0) return 0;
             if (sKey && mapVal < r) return 0;
@@ -176,11 +137,9 @@ function calculate() {
     }
     render(probs);
 }
-
 function render(probs) {
     const total = probs.reduce((a, b) => a + b, 0);
-    const resDiv = document.getElementById('results');
-    const confDiv = document.getElementById('confirm-area');
+    const resDiv = document.getElementById('results'); const confDiv = document.getElementById('confirm-area');
     resDiv.innerHTML = ''; confDiv.innerHTML = '';
     if (total === 0) { resDiv.innerHTML = '<span style="color:red">矛盾：入力ミスを確認</span>'; return; }
     const act = probs.map((p, i) => p > 0 ? SCENARIOS[i] : null).filter(x => x);
@@ -189,14 +148,7 @@ function render(probs) {
         .sort((a, b) => b.pb - a.pb).filter(x => x.pb > 0.1).slice(0, 5)
         .forEach(d => { resDiv.innerHTML += `<div class="res-item"><div class="res-name">${d.n}</div><div class="res-val">${d.pb.toFixed(1)}%</div></div>`; });
 }
-
-function resetAll() {
-    userInputs = [];
-    document.getElementById('set-container').innerHTML = '';
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('confirm-area').innerHTML = '';
-    addSetUI();
-}
+function resetAll() { userInputs = []; document.getElementById('set-container').innerHTML = ''; document.getElementById('results').innerHTML = ''; document.getElementById('confirm-area').innerHTML = ''; addSetUI(); }
 resetAll();
 </script>
 </body>
