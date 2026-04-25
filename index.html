@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーV シナリオ解析ツール</title>
+    <title>モンキーターンV シナリオ解析ツール</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; --selected: #00e676; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 160px; }
@@ -59,9 +59,9 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>滞在モード</h3>
         <select id="helmet" onchange="calculate()" style="background:#222; color:#fff; border:none; padding:8px; border-radius:4px; font-size:12px;">
-            <option value="normal">通常ヘルメット</option>
-            <option value="douguchi">洞口（シナリオ6以上）</option>
-            <option value="monokurohatano">モノクロ（逆襲or艇王）</option>
+            <option value="normal">通常</option>
+            <option value="douguchi">洞口</option>
+            <option value="monokurohatano">モノクロ</option>
         </select>
         <button onclick="resetAll()" style="background:none; border:1px solid #444; color:#888; font-size:11px; padding:4px 8px; border-radius:4px;">リセット</button>
     </div>
@@ -88,8 +88,8 @@ const SCENARIOS = [
     { id: 5, name: "ツケマイ巧者", p: 11.7, map: [3, 4, 0, 3, 0, 4, 2, 5] },
     { id: 6, name: "ギャンブラー", p: 5.2, map: [5, 0, 5, 0, 5, 0, 5, 5] },
     { id: 7, name: "紅一点", p: 5.5, map: [3, 4, 5, 0, 3, 0, 2, 5] },
-    { id: 8, name: "洞口SP", p: 5.2, map: [4, 4, 3, 3, 2, 0, 2, 5] },
-    { id: 9, name: "ヒロイン", p: 10.5, map: [2, 2, 2, 2, 2, 2, 2, 5] },
+    { id: 8, name: "洞口スペシャル", p: 5.2, map: [4, 4, 3, 3, 2, 0, 2, 5] },
+    { id: 9, name: "艇界のヒロイン", p: 10.5, map: [2, 2, 2, 2, 2, 2, 2, 5] },
     { id: 10, name: "一般戦の鬼", p: 5.2, map: [3, 3, 3, 3, 3, 3, 2, 5] },
     { id: 11, name: "愛知の巨人", p: 3.5, map: [4, 4, 4, 4, 4, 4, 2, 5] },
     { id: 12, name: "最強のB2", p: 1.4, map: [0, 5, 5, 5, 5, 5, 5, 5] },
