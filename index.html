@@ -36,9 +36,9 @@
 <body>
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>基本設定</h3>
+        <h3>滞在モード</h3>
         <select id="helmet" onchange="calculate()" style="background:#222; color:#fff; border:none; padding:5px; border-radius:4px;">
-            <option value="normal">通常</option><option value="douguchi">洞口ヘル</option><option value="monokurohatano">モノクロヘル</option>
+            <option value="normal">通常</option><option value="douguchi">洞口</option><option value="monokurohatano">モノクロ</option>
         </select>
         <button onclick="resetAll()" style="background:none; border:1px solid #444; color:#888; font-size:11px; padding:4px 8px; border-radius:4px;">リセット</button>
     </div>
@@ -47,7 +47,7 @@
 <div class="footer-tools">
     <div id="confirm-area" style="text-align:center; font-size:12px; margin-bottom:5px;"></div>
     <div class="res-flex" id="results"></div>
-    <button class="main-btn" onclick="calculate()">推測を実行</button>
+    <button class="main-btn" onclick="calculate()">推測</button>
     <div class="tool-bar"><button class="sub-btn" onclick="addSetUI()">セットを追加</button><button class="sub-btn" onclick="removeLastSet()">１つ削除</button></div>
 </div>
 <script>
