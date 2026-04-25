@@ -97,10 +97,10 @@ const SCENARIOS = [
     { id: 14, name: "艇王", p: 0.8, map: [5, 5, 5, 5, 5, 5, 5, 5] }
 ];
 const SCREENS = [
-    {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口'}, {id:'gamou', n:'蒲生'}, {id:'hamaoka', n:'浜岡'},
-    {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'親父'}, {id:'arisa', n:'ありさ'}, {id:'kakotachi', n:'香子'}, {id:'aoshima', n:'青島'},
-    {id:'kusidatachi', n:'櫛田'}, {id:'sumi', n:'澄'}, {id:'sensyusyuugou', n:'集合'}, {id:'hatanoke', n:'家'}, {id:'82kisei', n:'82期'},
-    {id:'joseisyuugou', n:'女集'}, {id:'monokurohatano', n:'M波'}, {id:'monokuroenoki', n:'M榎'}, {id:'hatanosumi', n:'波澄'}
+    {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口Jr.'}, {id:'gamou', n:'蒲生'}, {id:'hamaoka', n:'浜岡'},
+    {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'洞口親父'}, {id:'arisa', n:'ありさ'}, {id:'kakotachi', n:'香子たち'}, {id:'aoshima', n:'青島'},
+    {id:'kusidatachi', n:'櫛田＆萩原＆小林'}, {id:'sumi', n:'澄'}, {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'},
+    {id:'joseisyuugou', n:'女性キャラ集合'}, {id:'monokurohatano', n:'モノクロ波多野'}, {id:'monokuroenoki', n:'モノクロ榎木'}, {id:'hatanosumi', n:'波多野＆澄'}
 ];
 const SCREEN_PROBS = {
     hatano:[15,15,10.5,30,7.5,19,7.5,4.5,6.5,5,3,12.5,1.5,3.5], enoki:[15,15,7,8.5,6.5,7.5,5.5,5,4.5,5,3,1,50,15],
@@ -127,10 +127,10 @@ function addSetUI() {
     div.className = 'card';
     div.id = `set-card-${i}`;
     div.innerHTML = `
-        <div class="set-header">第 ${i+1} セット</div>
+        <div class="set-header">ラウンド ${i+1} </div>
         
         <div class="input-section" id="sec-screen-${i}">
-            <span class="label-text">開始画面</span>
+            <span class="label-text">ラウンド開始画面</span>
             <div class="grid" id="grid-screen-${i}">
                 ${SCREENS.map(s => `<div class="btn-img" style="background-image: url('start_screen/${s.id}.webp');" onclick="setVal(${i},'screen','${s.id}')"></div>`).join('')}
             </div>
