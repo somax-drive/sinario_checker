@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーターンV シナリオ解析ツール</title>
+    <title>モンキーターンV シナリオ推測ツール</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; --selected: #00e676; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 160px; }
@@ -76,41 +76,61 @@
 </div>
 
 <script>
+// シナリオ定義 (内部ランク 0:黒, 1:白, 2:青, 3:黄, 4:緑, 5:赤, 6:虹)
 const SCENARIOS = [
-    { id: 1, name: "駆け出し", p: 13.9, map: [0, 4, 0, 4, 0, 4, 2, 5] },
-    { id: 2, name: "遅咲き", p: 11.1, map: [0, 1, 2, 3, 4, 5, 5, 5] },
-    { id: 3, name: "関東ガマシ", p: 13.2, map: [2, 1, 3, 0, 3, 4, 2, 5] },
-    { id: 4, name: "ダービーキング", p: 12.4, map: [4, 0, 4, 0, 4, 5, 2, 5] },
-    { id: 5, name: "ツケマイ巧者", p: 11.7, map: [3, 4, 0, 3, 0, 4, 2, 5] },
-    { id: 6, name: "ギャンブラー", p: 5.2, map: [5, 0, 5, 0, 5, 0, 5, 5] },
-    { id: 7, name: "紅一点", p: 5.5, map: [3, 4, 5, 0, 3, 0, 2, 5] },
-    { id: 8, name: "洞口スペシャル", p: 5.2, map: [4, 4, 3, 3, 2, 0, 2, 5] },
-    { id: 9, name: "艇界のヒロイン", p: 10.5, map: [2, 2, 2, 2, 2, 2, 2, 5] },
-    { id: 10, name: "一般戦の鬼", p: 5.2, map: [3, 3, 3, 3, 3, 3, 2, 5] },
-    { id: 11, name: "愛知の巨人", p: 3.5, map: [4, 4, 4, 4, 4, 4, 2, 5] },
-    { id: 12, name: "最強のB2", p: 1.4, map: [0, 5, 5, 5, 5, 5, 5, 5] },
-    { id: 13, name: "逆襲の艇王", p: 0.8, map: [5, 0, 5, 5, 5, 5, 5, 5] },
-    { id: 14, name: "艇王", p: 0.8, map: [5, 5, 5, 5, 5, 5, 5, 5] }
+    { id: 0, name: "駆け出し", map: [1, 5, 1, 5, 1, 5, 3, 6], p_norm: 13.9, p_dou: 0, p_mono: 0 },
+    { id: 1, name: "遅咲き", map: [1, 2, 3, 4, 5, 6, 6, 6], p_norm: 11.1, p_dou: 0, p_mono: 0 },
+    { id: 2, name: "関東ガマシ", map: [3, 2, 4, 1, 4, 5, 3, 6], p_norm: 13.2, p_dou: 0, p_mono: 0 },
+    { id: 3, name: "ダービーキング", map: [5, 1, 5, 1, 5, 6, 3, 6], p_norm: 12.4, p_dou: 0, p_mono: 0 },
+    { id: 4, name: "ツケマイ巧者", map: [4, 5, 1, 4, 1, 5, 3, 6], p_norm: 11.7, p_dou: 0, p_mono: 0 },
+    { id: 5, name: "ギャンブラー", map: [6, 1, 6, 1, 6, 1, 6, 6], p_norm: 5.2, p_dou: 18.8, p_mono: 0 },
+    { id: 6, name: "紅一点", map: [4, 5, 6, 1, 4, 1, 3, 6], p_norm: 5.5, p_dou: 18.8, p_mono: 0 },
+    { id: 7, name: "洞口スペシャル", map: [5, 5, 4, 4, 3, 1, 3, 6], p_norm: 5.2, p_dou: 25.0, p_mono: 0 },
+    { id: 8, name: "艇界のヒロイン", map: [3, 3, 3, 3, 3, 3, 3, 6], p_norm: 10.5, p_dou: 0, p_mono: 0 },
+    { id: 9, name: "一般戦の鬼", map: [4, 4, 4, 4, 4, 4, 3, 6], p_norm: 5.2, p_dou: 18.8, p_mono: 0 },
+    { id: 10, name: "愛知の巨人", map: [5, 5, 5, 5, 5, 5, 3, 6], p_norm: 3.5, p_dou: 14.1, p_mono: 0 },
+    { id: 11, name: "最強のB2", map: [0, 6, 6, 6, 6, 6, 6, 6], p_norm: 1.4, p_dou: 2.1, p_mono: 50.0 },
+    { id: 12, name: "逆襲の艇王", map: [6, 0, 6, 6, 6, 6, 6, 6], p_norm: 0.8, p_dou: 0.9, p_mono: 0 },
+    { id: 13, name: "艇王", map: [6, 6, 6, 6, 6, 6, 6, 6], p_norm: 0.8, p_dou: 1.6, p_mono: 50.0 }
 ];
+
 const SCREENS = [
-    {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口Jr.'}, {id:'gamou', n:'蒲生'}, {id:'hamaoka', n:'浜岡'},
+    {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口Jr'}, {id:'gamou', n:'蒲生'}, {id:'hamaoka', n:'浜岡'},
     {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'洞口親父'}, {id:'arisa', n:'ありさ'}, {id:'kakotachi', n:'香子たち'}, {id:'aoshima', n:'青島'},
-    {id:'kusidatachi', n:'櫛田＆萩原＆小林'}, {id:'sumi', n:'澄'}, {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'},
-    {id:'joseisyuugou', n:'女性キャラ集合'}, {id:'monokurohatano', n:'モノクロ波多野'}, {id:'monokuroenoki', n:'モノクロ榎木'}, {id:'hatanosumi', n:'波多野＆澄'}
+    {id:'kusidatachi', n:'櫛田たち'}, {id:'sumi', n:'澄'}, {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'},
+    {id:'joseisyuugou', n:'女性キャラ集'}, {id:'monokurohatano', n:'モノクロ波多野'}, {id:'monokuroenoki', n:'モノクロ榎木'}, {id:'hatanosumi', n:'波多野&澄'}
 ];
+
 const SCREEN_PROBS = {
-    hatano:[15,15,10.5,30,7.5,19,7.5,4.5,6.5,5,3,12.5,1.5,3.5], enoki:[15,15,7,8.5,6.5,7.5,5.5,5,4.5,5,3,1,50,15],
-    douguchi:[14,14,9.5,9.5,8,8,7.5,27.5,7.5,5,10,1,1,3.5], gamou:[14,14,9.5,9.5,8,8,7.5,4.5,6.5,32.5,3,1,1,3.5],
-    hamaoka:[14,14,10.5,9.5,30,8,7.5,4.5,6.5,5,3,1,1,3.5], koike:[14,14,30,9.5,7.5,8,7.5,4.5,12,5,3,1,1,3.5],
-    douguchioyaji:[14,14,10,9.5,7.5,8,7.5,10,6.5,5,32.5,1,1,3.5], arisa:[0,0,5,7,5,22.5,5.5,5,7.5,3.5,4.5,0.2,0.5,3.5],
-    kakotachi:[0,0,7.5,7,10,3.5,5.5,6.5,32.5,10,4.5,0.2,0.5,3.5], aoshima:[0,0,0,0,10,4,25,8,10,7.5,4.5,0.2,0.5,3.5],
-    kusidatachi:[0,0,0,0,0,3.5,7.5,8.5,0,5.5,4.5,0.2,0.5,3.5], sumi:[0,0,0,0,0,0,0,0,0,0,4.5,0,0,8],
-    sensyusyuugou:[0,0,0,0,0,0,7.5,6.5,0,5.5,5,0.2,0.5,5], hatanoke:[0,0,0,0,0,0,0,0,0,5.5,5,0.3,0.5,5],
-    '82kisei':[0,0,0,0,0,0,0,5,0,0,5,0.2,0.5,5], joseisyuugou:[0,0,0,0,0,0,0,0,0,0,5,0,0,5],
-    monokurohatano:[0,0,0,0,0,0,0,0,0,0,0,80,0,5], monokuroenoki:[0,0,0,0,0,0,0,0,0,0,0,0,40,2.5], hatanosumi:[0,0,0,0,0,0,0,0,0,0,0,0,0,14.5]
+    hatano: [15,15,10.5,30,7.5,19,7.5,4.5,6.5,5,3,12.5,1.5,3.5],
+    enoki: [15,15,7,8.5,6.5,7.5,5.5,5,4.5,5,3,1,50,15],
+    douguchi: [14,14,9.5,9.5,8,8,7.5,27.5,7.5,5,10,1,1,3.5],
+    gamou: [14,14,9.5,9.5,8,8,7.5,4.5,6.5,32.5,3,1,1,3.5],
+    hamaoka: [14,14,10.5,9.5,30,8,7.5,4.5,6.5,5,3,1,1,3.5],
+    koike: [14,14,30,9.5,7.5,8,7.5,4.5,12,5,3,1,1,3.5],
+    douguchioyaji: [14,14,10,9.5,7.5,8,7.5,10,6.5,5,32.5,1,1,3.5],
+    arisa: [0,0,5,7,5,22.5,5.5,5,7.5,3.5,4.5,0.2,0.5,3.5],
+    kakotachi: [0,0,7.5,7,10,3.5,5.5,6.5,32.5,10,4.5,0.2,0.5,3.5],
+    aoshima: [0,0,0,0,10,4,25,8,10,7.5,4.5,0.2,0.5,3.5],
+    kusidatachi: [0,0,0,0,0,3.5,7.5,8.5,0,5.5,4.5,0.2,0.5,3.5],
+    sumi: [0,0,0,0,0,0,0,0,0,0,4.5,0,0,8],
+    sensyusyuugou: [0,0,0,0,0,0,7.5,6.5,0,5.5,5,0.2,0.5,5],
+    hatanoke: [0,0,0,0,0,0,0,0,0,5.5,5,0.3,0.5,5],
+    '82kisei': [0,0,0,0,0,0,0,5,0,0,5,0.2,0.5,5],
+    joseisyuugou: [0,0,0,0,0,0,0,0,0,0,5,0,0,5],
+    monokurohatano: [0,0,0,0,0,0,0,0,0,0,0,80,0,5],
+    monokuroenoki: [0,0,0,0,0,0,0,0,0,0,0,0,40,2.5],
+    hatanosumi: [0,0,0,0,0,0,0,0,0,0,0,0,0,14.5]
 };
-const REQ = { arisa:2, kakotachi:2, aoshima:2, kusidatachi:3, sensyusyuugou:3, hatanoke:3, '82kisei':4 };
-const LAMPS = [ {v:0, c:'#fff', n:'白'}, {v:1, c:'#2196f3', n:'青'}, {v:2, c:'#ffeb3b', n:'黄'}, {v:3, c:'#4caf50', n:'緑'}, {v:4, c:'#f44336', n:'赤'}, {v:5, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)', n:'虹'} ];
+
+const BG_MIN_RANK = {
+    arisa: 3, kakotachi: 3, aoshima: 3, kusidatachi: 4, sensyusyuugou: 4, hatanoke: 4, '82kisei': 5
+};
+
+const LAMPS = [ 
+    {v:1, c:'#fff', n:'白'}, {v:2, c:'#2196f3', n:'青'}, {v:3, c:'#ffeb3b', n:'黄'}, 
+    {v:4, c:'#4caf50', n:'緑'}, {v:5, c:'#f44336', n:'赤'}, {v:6, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)', n:'虹'} 
+];
 
 let userInputs = [];
 
@@ -124,7 +144,7 @@ function addSetUI() {
     div.id = `set-card-${i}`;
     div.innerHTML = `
         <div class="set-header">ラウンド ${i+1} </div>
-        <div class="input-section" id="sec-screen-${i}">
+        <div class="input-section">
             <span class="label-text">ラウンド開始画面</span>
             <div class="grid" id="grid-screen-${i}">
                 ${SCREENS.map(s => `<div class="btn-img" style="background-image: url('start_screen/${s.id}.webp');" onclick="setVal(${i},'screen','${s.id}')"></div>`).join('')}
@@ -135,7 +155,7 @@ function addSetUI() {
                 <div class="change-btn">変更</div>
             </div>
         </div>
-        <div class="input-section" id="sec-lamp-${i}">
+        <div class="input-section">
             <span class="label-text">レース中ランプ</span>
             <div class="grid lamp-grid" id="grid-lamp-${i}">
                 ${LAMPS.map(l => `<div class="lamp-btn" style="background:${l.c}" onclick="setVal(${i},'lamp',${l.v})"></div>`).join('')}
@@ -148,7 +168,6 @@ function addSetUI() {
         </div>
     `;
     document.getElementById('set-container').appendChild(div);
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
 function toggleGrid(idx, type) {
@@ -158,10 +177,8 @@ function toggleGrid(idx, type) {
 
 function setVal(idx, type, val) {
     userInputs[idx][type] = val;
-    const gridEl = document.getElementById(`grid-${type}-${idx}`);
-    const viewEl = document.getElementById(`view-${type}-${idx}`);
-    gridEl.classList.add('hidden');
-    viewEl.classList.remove('hidden');
+    document.getElementById(`grid-${type}-${idx}`).classList.add('hidden');
+    document.getElementById(`view-${type}-${idx}`).classList.remove('hidden');
 
     if (type === 'screen') {
         const screenObj = SCREENS.find(s => s.id === val);
@@ -172,7 +189,6 @@ function setVal(idx, type, val) {
         document.getElementById(`prev-lamp-bg-${idx}`).style.background = lampObj.c;
         document.getElementById(`prev-lamp-name-${idx}`).innerText = lampObj.n + "色";
     }
-    // 自動推測を無効化
 }
 
 function removeLastSet() {
@@ -180,41 +196,52 @@ function removeLastSet() {
     userInputs.pop();
     const c = document.getElementById('set-container');
     c.removeChild(c.lastChild);
-    // 自動推測を無効化
 }
 
 function calculate() {
     const mode = document.getElementById('helmet').value;
     let probs = SCENARIOS.map(s => {
-        let b = s.p; const sid = s.id;
-        if (mode === 'douguchi') { if (sid < 6 || sid === 9) b = 0; }
-        else if (mode === 'monokurohatano') { if (sid !== 12 && sid !== 14) b = 0; }
-        return b;
+        if (mode === 'douguchi') return s.p_dou;
+        if (mode === 'monokurohatano') return s.p_mono;
+        return s.p_norm;
     });
 
     for (let i = 0; i < userInputs.length; i++) {
         const input = userInputs[i];
         const sKey = input.screen;
-        const lVal = input.lamp;
-        const sArray = sKey ? SCREEN_PROBS[sKey] : null;
-        const r = sKey ? (REQ[sKey] || 0) : 0;
-
+        const lVal = input.lamp; 
+        
         probs = probs.map((p, si) => {
             if (p === 0) return 0;
-            const sid = SCENARIOS[si].id;
-            const mapVal = SCENARIOS[si].map[i];
+            const scenario = SCENARIOS[si];
+            const mapVal = scenario.map[i]; // 内部ランク (0:黒 ～ 6:虹)
 
-            if (lVal === 5) {
-                if (i === 0 && sid !== 14) return 0;
-                if (i === 1 && sid !== 12 && sid !== 14) return 0;
-                if (i >= 2 && i < 7 && (sid !== 12 && sid !== 13 && sid !== 14)) return 0;
+            // --- ランプ色ロジック修正 ---
+            if (lVal !== null) {
+                // 虹ランプ(6)が出たら特定のシナリオに限定
+                if (lVal === 6) {
+                    if (i === 0 && scenario.id !== 13) return 0; // 1セット目虹→艇王
+                    if (i === 1 && ![11, 13].includes(scenario.id)) return 0; // 2セット目虹→B2,艇王
+                    if (i >= 2 && i < 7 && ![11, 12, 13].includes(scenario.id)) return 0; // 3枚目以降→B2,逆襲,艇王
+                } else {
+                    // 赤ランプ(5)は内部が赤(5)または虹(6)の時に出る
+                    // 内部ランク(mapVal)が選択ランプ(lVal)より低ければ矛盾（白ランプ時はmapValが何であってもOK）
+                    // 内部が虹(6)でもランプは赤(5)までしか上がらないことがあるため、lVal=5, mapVal=6は許容。
+                    if (lVal > mapVal && !(lVal === 5 && mapVal === 6)) return 0;
+                }
             }
-            if (sKey && sArray[si] === 0) return 0;
-            if (sKey && mapVal < r) return 0;
-            if (lVal !== null && lVal > mapVal) return 0;
-            return p * (sKey ? sArray[si] : 1);
+
+            // --- 画面ロジック ---
+            if (sKey) {
+                if (SCREEN_PROBS[sKey][si] === 0) return 0;
+                const minRank = BG_MIN_RANK[sKey] || 0;
+                if (mapVal < minRank) return 0;
+                return p * SCREEN_PROBS[sKey][si];
+            }
+            return p;
         });
     }
+
     render(probs);
 }
 
@@ -229,22 +256,21 @@ function render(probs) {
         return;
     }
 
-    const act = probs.map((p, i) => p > 0 ? SCENARIOS[i] : null).filter(x => x);
-    if (act.length === 1) {
-        confDiv.innerHTML = `<span style="background:#d32f2f; color:white; padding:2px 12px; border-radius:20px; font-weight:bold; font-size:11px;">確定：${act[0].name}</span>`;
+    const sorted = SCENARIOS.map((s, i) => ({ n: s.name, pb: (probs[i] / total) * 100 }))
+        .sort((a, b) => b.pb - a.pb)
+        .filter(x => x.pb > 0.01);
+
+    if (sorted.length > 0 && sorted[0].pb > 99.5) {
+        confDiv.innerHTML = `<span style="background:#d32f2f; color:white; padding:2px 12px; border-radius:20px; font-weight:bold; font-size:11px;">確定：${sorted[0].n}</span>`;
     }
 
-    probs.map((p, i) => ({ n: SCENARIOS[i].name, pb: (p / total) * 100 }))
-        .sort((a, b) => b.pb - a.pb)
-        .filter(x => x.pb > 0.1)
-        .slice(0, 5)
-        .forEach(d => {
-            resDiv.innerHTML += `
-                <div class="res-item">
-                    <div class="res-name">${d.n}</div>
-                    <div class="res-val">${d.pb.toFixed(1)}%</div>
-                </div>`;
-        });
+    sorted.slice(0, 5).forEach(d => {
+        resDiv.innerHTML += `
+            <div class="res-item">
+                <div class="res-name">${d.n}</div>
+                <div class="res-val">${d.pb.toFixed(1)}%</div>
+            </div>`;
+    });
 }
 
 function resetAll() {
