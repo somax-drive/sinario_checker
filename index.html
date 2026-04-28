@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーターンV シナリオ推測ツール</title>
+    <title>モンキーターンV シナリオ解析ツール</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; --selected: #00e676; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 160px; }
         .card { background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
         h3 { margin: 0 0 8px 0; color: var(--accent); font-size: 14px; border-left: 4px solid var(--accent); padding-left: 8px; }
         .set-header { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #fff; display: flex; justify-content: space-between; }
-        
         .input-section { margin-bottom: 10px; }
         .label-text { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
-        
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
         .lamp-grid { grid-template-columns: repeat(6, 1fr); }
-        
         .btn-img { 
             background: #222; border: 2px solid #333; border-radius: 6px; 
             aspect-ratio: 1 / 1; transition: 0.1s;
@@ -24,7 +21,6 @@
             position: relative; overflow: hidden;
         }
         .lamp-btn { height: 35px; border-radius: 4px; border: 2px solid transparent; cursor: pointer; }
-
         .selected-display {
             display: flex; align-items: center; background: #1a1a1a; 
             padding: 8px; border-radius: 8px; border: 1px dashed #444;
@@ -35,7 +31,6 @@
         .selected-display .preview-lamp { width: 40px; height: 20px; border-radius: 4px; margin-right: 10px; border: 1px solid #333; }
         .selected-display .info { flex: 1; font-size: 12px; }
         .selected-display .change-btn { font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 6px; border-radius: 4px; }
-
         .footer-tools { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 10px 15px; border-top: 2px solid var(--accent); z-index: 100; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
         .main-btn { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; margin-bottom: 8px; box-shadow: 0 4px 0 #00964b; }
         .main-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #00964b; }
@@ -45,7 +40,6 @@
         .res-item { min-width: 85px; text-align: center; background: #222; padding: 5px; border-radius: 6px; }
         .res-name { font-size: 10px; color: #888; white-space: nowrap; }
         .res-val { font-size: 13px; color: var(--accent); font-weight: bold; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
@@ -56,8 +50,8 @@
         <h3>滞在モード</h3>
         <select id="helmet" style="background:#222; color:#fff; border:none; padding:8px; border-radius:4px; font-size:12px;">
             <option value="normal">通常</option>
-            <option value="douguchi">洞口</option>
-            <option value="monokurohatano">モノクロ</option>
+            <option value="douguchi">洞口ヘルメット</option>
+            <option value="monokurohatano">モノクロ波多野</option>
         </select>
         <button onclick="resetAll()" style="background:none; border:1px solid #444; color:#888; font-size:11px; padding:4px 8px; border-radius:4px;">リセット</button>
     </div>
@@ -76,7 +70,6 @@
 </div>
 
 <script>
-// シナリオ定義 (内部ランク 0:黒, 1:白, 2:青, 3:黄, 4:緑, 5:赤, 6:虹)
 const SCENARIOS = [
     { id: 0, name: "駆け出し", map: [1, 5, 1, 5, 1, 5, 3, 6], p_norm: 13.9, p_dou: 0, p_mono: 0 },
     { id: 1, name: "遅咲き", map: [1, 2, 3, 4, 5, 6, 6, 6], p_norm: 11.1, p_dou: 0, p_mono: 0 },
@@ -89,8 +82,8 @@ const SCENARIOS = [
     { id: 8, name: "艇界のヒロイン", map: [3, 3, 3, 3, 3, 3, 3, 6], p_norm: 10.5, p_dou: 0, p_mono: 0 },
     { id: 9, name: "一般戦の鬼", map: [4, 4, 4, 4, 4, 4, 3, 6], p_norm: 5.2, p_dou: 18.8, p_mono: 0 },
     { id: 10, name: "愛知の巨人", map: [5, 5, 5, 5, 5, 5, 3, 6], p_norm: 3.5, p_dou: 14.1, p_mono: 0 },
-    { id: 11, name: "最強のB2", map: [0, 6, 6, 6, 6, 6, 6, 6], p_norm: 1.4, p_dou: 2.1, p_mono: 50.0 },
-    { id: 12, name: "逆襲の艇王", map: [6, 0, 6, 6, 6, 6, 6, 6], p_norm: 0.8, p_dou: 0.9, p_mono: 0 },
+    { id: 11, name: "最強のB2", map: [1, 6, 6, 6, 6, 6, 6, 6], p_norm: 1.4, p_dou: 2.1, p_mono: 50.0 },
+    { id: 12, name: "逆襲の艇王", map: [6, 1, 6, 6, 6, 6, 6, 6], p_norm: 0.8, p_dou: 0.9, p_mono: 0 },
     { id: 13, name: "艇王", map: [6, 6, 6, 6, 6, 6, 6, 6], p_norm: 0.8, p_dou: 1.6, p_mono: 50.0 }
 ];
 
@@ -138,12 +131,11 @@ function addSetUI() {
     if (userInputs.length >= 8) return;
     const i = userInputs.length;
     userInputs.push({ screen: null, lamp: null });
-    
     const div = document.createElement('div');
     div.className = 'card';
     div.id = `set-card-${i}`;
     div.innerHTML = `
-        <div class="set-header">ROUND ${i+1} </div>
+        <div class="set-header">ラウンド ${i+1} </div>
         <div class="input-section">
             <span class="label-text">ラウンド開始画面</span>
             <div class="grid" id="grid-screen-${i}">
@@ -179,7 +171,6 @@ function setVal(idx, type, val) {
     userInputs[idx][type] = val;
     document.getElementById(`grid-${type}-${idx}`).classList.add('hidden');
     document.getElementById(`view-${type}-${idx}`).classList.remove('hidden');
-
     if (type === 'screen') {
         const screenObj = SCREENS.find(s => s.id === val);
         document.getElementById(`prev-img-${idx}`).style.backgroundImage = `url('start_screen/${val}.webp')`;
@@ -214,34 +205,59 @@ function calculate() {
         probs = probs.map((p, si) => {
             if (p === 0) return 0;
             const scenario = SCENARIOS[si];
-            const mapVal = scenario.map[i]; // 内部ランク (0:黒 ～ 6:虹)
+            const mapVal = scenario.map[i];
 
-            // --- ランプ色ロジック修正 ---
+            // --- レース中ランプによる絞り込み ---
             if (lVal !== null) {
-                // 虹ランプ(6)が出たら特定のシナリオに限定
-                if (lVal === 6) {
-                    if (i === 0 && scenario.id !== 13) return 0; // 1セット目虹→艇王
-                    if (i === 1 && ![11, 13].includes(scenario.id)) return 0; // 2セット目虹→B2,艇王
-                    if (i >= 2 && i < 7 && ![11, 12, 13].includes(scenario.id)) return 0; // 3枚目以降→B2,逆襲,艇王
+                if (i === 7) { // 8セット目(GS)は全シナリオ虹
+                    if (lVal !== 6) return 0;
+                } else if (lVal === 6) {
+                    // 虹ランプ出現時のシナリオ特定ロジック
+                    if (i === 0) { // 1セット目虹
+                        if (scenario.id !== 13) return 0; // 艇王のみ
+                    } else if (i === 1) { // 2セット目虹
+                        if (userInputs[0].lamp !== 1 && userInputs[0].lamp !== null) {
+                            if (scenario.id !== 13) return 0; // 1セット目が白以外なら艇王のみ
+                        } else {
+                            if (![11, 13].includes(scenario.id)) return 0; // 1セット目が白なら最強B2or艇王
+                        }
+                    } else if (i >= 2) { // 3セット目以降の虹
+                        const s1 = userInputs[0].lamp;
+                        const s2 = userInputs[1].lamp;
+                        if (s1 !== 1 && s1 !== null && s2 !== 1 && s2 !== null) {
+                            if (scenario.id !== 13) return 0; // 1,2セット両方白以外なら艇王
+                        } else if (s2 === 1) {
+                            if (![12, 13].includes(scenario.id)) return 0; // 2セット目が白なら逆襲or艇王
+                        } else {
+                            if (![11, 12, 13].includes(scenario.id)) return 0; // それ以外
+                        }
+                    }
                 } else {
-                    // 赤ランプ(5)は内部が赤(5)または虹(6)の時に出る
-                    // 内部ランク(mapVal)が選択ランプ(lVal)より低ければ矛盾（白ランプ時はmapValが何であってもOK）
-                    // 内部が虹(6)でもランプは赤(5)までしか上がらないことがあるため、lVal=5, mapVal=6は許容。
-                    if (lVal > mapVal && !(lVal === 5 && mapVal === 6)) return 0;
+                    // 内部虹(6)でもランプは赤(5)までしか上がらない仕様を考慮
+                    let maxVisible = (mapVal === 6) ? 5 : mapVal;
+                    if (lVal > maxVisible) return 0;
                 }
             }
 
-            // --- 画面ロジック ---
+            // --- ラウンド開始画面による絞り込み ---
             if (sKey) {
                 if (SCREEN_PROBS[sKey][si] === 0) return 0;
+                
+                // 示唆背景の最低継続率条件
                 const minRank = BG_MIN_RANK[sKey] || 0;
                 if (mapVal < minRank) return 0;
+
+                // 艇王確定画面の個別処理
+                if (sKey === 'hatanosumi' && scenario.id !== 13) return 0;
+
+                // 8セット目の示唆（駆け出し・遅咲きは示唆キャラが出ない）
+                if (i === 7 && [0, 1].includes(scenario.id)) return 0;
+
                 return p * SCREEN_PROBS[sKey][si];
             }
             return p;
         });
     }
-
     render(probs);
 }
 
@@ -252,7 +268,7 @@ function render(probs) {
     resDiv.innerHTML = ''; confDiv.innerHTML = '';
     
     if (total === 0) {
-        resDiv.innerHTML = '<span style="color:#ff5252; font-size:12px; font-weight:bold;">矛盾しています：入力を見直してください</span>';
+        resDiv.innerHTML = '<span style="color:#ff5252; font-size:12px; font-weight:bold;">矛盾しています</span>';
         return;
     }
 
@@ -260,10 +276,7 @@ function render(probs) {
         .sort((a, b) => b.pb - a.pb)
         .filter(x => x.pb > 0.01);
 
-    if (sorted.length > 0 && sorted[0].pb > 99.5) {
-        confDiv.innerHTML = `<span style="background:#d32f2f; color:white; padding:2px 12px; border-radius:20px; font-weight:bold; font-size:11px;">確定：${sorted[0].n}</span>`;
-    }
-
+    // 「確定」の文言を表示せず、上位の結果をリストアップ
     sorted.slice(0, 5).forEach(d => {
         resDiv.innerHTML += `
             <div class="res-item">
@@ -280,7 +293,6 @@ function resetAll() {
     document.getElementById('confirm-area').innerHTML = '';
     addSetUI();
 }
-
 resetAll();
 </script>
 </body>
