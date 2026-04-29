@@ -3,54 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーターンV 解析ツール PRO+ (実機風UI版)</title>
+    <title>モンキーターンV 解析 PRO</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
         
-        /* 筐体風レイアウト */
-        .cabinet { display: grid; grid-template-columns: 100px 1fr 100px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
+        /* 筐体レイアウトの微調整 */
+        .cabinet { display: grid; grid-template-columns: 80px 1fr 80px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 8px; padding: 8px; box-sizing: border-box; }
 
-        /* 上部ランプ：入力したランプを表示 */
-        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; background: #1a1a1a; padding: 10px; border-radius: 12px; border: 2px solid #333; }
-        .lamp-tile { width: 30px; height: 40px; border-radius: 4px; background: #333; border: 1px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255, 255, 255, 0.7); text-shadow: 1px 1px 2px black; transition: 0.1s; }
-        .lamp-tile.active { color: white; }
-        .lamp-tile.selected { border: 2px solid var(--accent); box-shadow: 0 0 10px var(--accent); }
+        /* 上部ランプ：縦3:横4の横長形状 */
+        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; background: #1a1a1a; padding: 8px; border-radius: 8px; border: 1px solid #333; justify-items: center; }
+        .lamp-tile { width: 40px; height: 30px; border-radius: 4px; background: #2a2a2a; border: 1px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: rgba(255, 255, 255, 0.4); transition: 0.1s; }
+        .lamp-tile.active { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.8); }
+        .lamp-tile.selected { border: 2px solid var(--accent); box-shadow: 0 0 8px var(--accent); }
 
-        /* サイドパネル：実機の左右スピーカーを模倣 */
-        .side-rounds { display: flex; flex-direction: column; gap: 10px; justify-content: space-around; }
-        .round-box { width: 90px; height: 90px; background: #222; border: 3px solid #444; border-radius: 6px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; cursor: pointer; }
-        .round-box.active { border-color: #888; color: #fff; }
-        .round-box.editing { border-color: var(--accent) !important; box-shadow: 0 0 12px var(--accent); transform: scale(1.05); z-index: 10; }
+        /* 左右パネル：小型化して視認性向上 */
+        .side-rounds { display: flex; flex-direction: column; gap: 6px; justify-content: space-around; }
+        .round-box { width: 70px; height: 70px; background: #1a1a1a; border: 2px solid #333; border-radius: 4px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #555; cursor: pointer; }
+        .round-box.active { border-color: #666; color: #fff; }
+        .round-box.editing { border-color: var(--accent) !important; box-shadow: 0 0 8px var(--accent); z-index: 10; }
         .round-box img { width: 100%; height: 100%; object-fit: cover; }
-        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.8); font-size: 10px; padding: 2px 6px; z-index: 2; border-bottom-right-radius: 6px; }
-        .side-rounds.left-panel { background: radial-gradient(circle at left, #1a1a1a 0%, #121212 100%); }
-        .side-rounds.right-panel { background: radial-gradient(circle at right, #1a1a1a 0%, #121212 100%); }
+        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.8); font-size: 9px; padding: 1px 3px; z-index: 2; border-bottom-right-radius: 4px; color: #888; }
 
-        /* 中央メインパネル：シナリオ表と液晶を模倣 */
-        .center-panel { background: #121212; border: 2px solid #333; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
-        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 8px; font-size: 16px; margin-bottom: 15px; }
-        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 5px; }
-        .screen-btn { aspect-ratio: 1; background-size: cover; border: 2px solid #333; border-radius: 6px; cursor: pointer; }
+        /* 中央メインパネル */
+        .center-panel { background: #121212; border: 1px solid #333; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
+        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
+        .screen-btn { aspect-ratio: 1; background-size: cover; border: 1px solid #333; border-radius: 4px; cursor: pointer; }
         .screen-btn.active { border-color: var(--accent); }
-        .lamp-btn { height: 40px; border-radius: 6px; border: 1px solid #000; cursor: pointer; }
+        .lamp-btn { height: 35px; border-radius: 4px; border: 1px solid #000; cursor: pointer; }
 
         /* 解析結果表示 */
-        .results-container { margin-top: 20px; flex-grow: 1; border-top: 2px solid #333; padding-top: 15px; }
-        .res-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 16px; }
+        .results-container { margin-top: 10px; flex-grow: 1; border-top: 1px solid #2a2a2a; padding-top: 8px; }
+        .res-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
         .res-val { color: var(--accent); font-weight: bold; }
 
-        /* 下部ボタン */
-        .footer { grid-column: 1 / 4; padding: 10px 15px; display: flex; gap: 15px; background: #1a1a1a; border-top: 2px solid #333; }
-        .action-btn { flex: 1; background: #333; color: #fff; border: 1px solid #555; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; }
-        .reset-btn { width: 120px; background: #b71c1c; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        /* 下部操作ボタン */
+        .footer { grid-column: 1 / 4; padding: 8px; display: flex; gap: 8px; background: #0a0a0a; border-top: 1px solid #222; }
+        .action-btn { flex: 1; background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; }
+        .reset-btn { width: 90px; background: #8e1515; color: #fff; border: none; border-radius: 6px; font-size: 14px; }
+        
+        .placeholder-text { font-size: 9px; text-align: center; line-height: 1.2; }
     </style>
 </head>
 <body>
 
 <div class="cabinet">
     <div class="top-lamps" id="lamp-display"></div>
-
     <div class="side-rounds left-panel" id="left-rounds"></div>
 
     <div class="center-panel">
@@ -61,14 +61,11 @@
         </select>
 
         <div id="editor-ui">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <b id="editing-label" style="color:var(--accent); font-size:16px;">ROUND 1 編集</b>
-                <span style="font-size:12px; color:#888;">枠タップで切替</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+                <b id="editing-label" style="color:var(--accent); font-size:14px;">ROUND 1 編集</b>
             </div>
-            
             <div class="btn-grid" id="screen-btns"></div>
-            
-            <div class="btn-grid" style="grid-template-columns: repeat(6, 1fr); margin-top:15px;" id="lamp-btns"></div>
+            <div class="btn-grid" style="grid-template-columns: repeat(6, 1fr); margin-top:10px;" id="lamp-btns"></div>
         </div>
 
         <div class="results-container">
@@ -85,7 +82,6 @@
 </div>
 
 <script>
-// --- データ定義は前回と同じ ---
 const SCENARIOS = [
     { id: 0, name: "駆け出し", map: [1, 5, 1, 5, 1, 5, 3, 6], p_norm: 13.9, p_dou: 0, p_mono: 0 },
     { id: 1, name: "遅咲き", map: [1, 2, 3, 4, 5, 6, 6, 6], p_norm: 11.1, p_dou: 0, p_mono: 0 },
@@ -135,51 +131,41 @@ const SCREEN_PROBS = {
 
 const LAMPS = [{v:1, c:'#fff'}, {v:2, c:'#2196f3'}, {v:3, c:'#ffeb3b'}, {v:4, c:'#4caf50'}, {v:5, c:'#f44336'}, {v:6, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)'}];
 
-// --- 状態管理 ---
 let currentEditIdx = 0;
 let inputs = Array(8).fill(null).map(() => ({ screen: null, lamp: null }));
 
-// --- 初期化 ---
 function init() {
     const left = document.getElementById('left-rounds');
     const right = document.getElementById('right-rounds');
     const lampBar = document.getElementById('lamp-display');
 
     for(let i=0; i<8; i++) {
-        // ラウンド画面表示枠
         const box = document.createElement('div');
-        box.className = 'round-box';
-        box.id = `round-view-${i}`;
+        box.className = 'round-box'; box.id = `round-view-${i}`;
         box.onclick = () => setEditTarget(i);
-        box.innerHTML = `<span class="round-label">R${i+1}</span><div class="screen-placeholder">SG</div>`;
+        box.innerHTML = `<span class="round-label">R${i+1}</span><div class="placeholder-text">Round ${i+1}</div>`;
         if(i < 4) left.appendChild(box); else right.appendChild(box);
 
-        // 上部ランプインジケーター (3:4比率の矩形、SGテキスト入り)
         const tile = document.createElement('div');
-        tile.className = 'lamp-tile';
-        tile.id = `lamp-tile-${i}`;
+        tile.className = 'lamp-tile'; tile.id = `lamp-tile-${i}`;
         tile.onclick = (e) => { e.stopPropagation(); setEditTarget(i); };
-        tile.innerHTML = `<span>SG</span>`;
+        tile.innerHTML = `SG`;
         lampBar.appendChild(tile);
     }
 
-    // 入力ボタン生成 (画面)
     const sGrid = document.getElementById('screen-btns');
     SCREENS.forEach(s => {
         const btn = document.createElement('div');
-        btn.className = 'screen-btn';
-        btn.id = `btn-s-${s.id}`;
+        btn.className = 'screen-btn'; btn.id = `btn-s-${s.id}`;
         btn.style.backgroundImage = `url('start_screen/${s.id}.webp')`;
         btn.onclick = () => updateScreen(s.id);
         sGrid.appendChild(btn);
     });
 
-    // 入力ボタン生成 (ランプ)
     const lGrid = document.getElementById('lamp-btns');
     LAMPS.forEach(l => {
         const btn = document.createElement('button');
-        btn.className = 'lamp-btn';
-        btn.style.background = l.c;
+        btn.className = 'lamp-btn'; btn.style.background = l.c;
         btn.onclick = () => updateLamp(l.v);
         lGrid.appendChild(btn);
     });
@@ -188,7 +174,6 @@ function init() {
     calculate();
 }
 
-// 編集対象のセットを切り替え
 function setEditTarget(idx) {
     currentEditIdx = idx;
     document.querySelectorAll('.round-box, .lamp-tile').forEach(el => el.classList.remove('editing', 'selected'));
@@ -198,17 +183,14 @@ function setEditTarget(idx) {
     syncButtons();
 }
 
-// 開始画面を入力
 function updateScreen(id) {
     inputs[currentEditIdx].screen = id;
     const box = document.getElementById(`round-view-${currentEditIdx}`);
     box.classList.add('active');
     box.innerHTML = `<span class="round-label">R${currentEditIdx+1}</span><img src="start_screen/${id}.webp">`;
-    syncButtons();
-    calculate();
+    syncButtons(); calculate();
 }
 
-// レース中ランプを入力 (上部ランプを更新)
 function updateLamp(val) {
     inputs[currentEditIdx].lamp = val;
     const tile = document.getElementById(`lamp-tile-${currentEditIdx}`);
@@ -217,31 +199,25 @@ function updateLamp(val) {
     calculate();
 }
 
-function selectNext() {
-    if(currentEditIdx < 7) setEditTarget(currentEditIdx + 1);
-}
+function selectNext() { if(currentEditIdx < 7) setEditTarget(currentEditIdx + 1); }
 
-// 入力ボタンの状態を同期
 function syncButtons() {
     document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
     const currentId = inputs[currentEditIdx].screen;
     if(currentId) document.getElementById(`btn-s-${currentId}`).classList.add('active');
 }
 
-// 解析・計算ロジック (虹ランプ、R8答え合わせ対応版)
 function calculate() {
     const mode = document.getElementById('helmet').value;
     let probs = SCENARIOS.map(s => (mode==='douguchi' ? s.p_dou : (mode==='monokurohatano' ? s.p_mono : s.p_norm)));
 
     inputs.forEach((input, i) => {
         if(!input.screen && !input.lamp) return;
-        
         probs = probs.map((p, si) => {
             if (p === 0) return 0;
             const scenario = SCENARIOS[si];
             const mapVal = scenario.map[i];
 
-            // --- ランプ色判定 (虹ランプ絞り込みロジックを含む) ---
             if(input.lamp) {
                 if (i === 7) { if (input.lamp !== 6) return 0; }
                 else if (input.lamp === 6) {
@@ -262,7 +238,6 @@ function calculate() {
                 }
             }
 
-            // --- ラウンド開始画面判定 (R8答え合わせロジックを含む) ---
             if(input.screen) {
                 if (i === 7) {
                     const blueChars = ['hatano','enoki','douguchi','gamou','hamaoka','koike','douguchioyaji'];
@@ -306,13 +281,12 @@ function confirmReset() {
         for(let i=0; i<8; i++) {
             const box = document.getElementById(`round-view-${i}`);
             box.classList.remove('active');
-            box.innerHTML = `<span class="round-label">R${i+1}</span><div class="screen-placeholder">SG</div>`;
+            box.innerHTML = `<span class="round-label">R${i+1}</span><div class="placeholder-text">Round ${i+1}</div>`;
             const tile = document.getElementById(`lamp-tile-${i}`);
             tile.classList.remove('active');
-            tile.style.background = '#333';
+            tile.style.background = '#2a2a2a';
         }
-        setEditTarget(0);
-        calculate();
+        setEditTarget(0); calculate();
     }
 }
 init();
