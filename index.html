@@ -41,12 +41,11 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-weight: 900; /* 文字を極太に */
+            font-weight: 900; 
             font-size: 10px; 
-            color: rgba(255, 255, 255, 0.15); /* 未選択時は薄く */
+            color: rgba(255, 255, 255, 0.15);
             transition: 0.1s;
         }
-        /* 修正箇所：点灯時は文字を濃いグレーにして視認性を確保 */
         .lamp-tile.active { 
             color: #222 !important; 
             text-shadow: 0.5px 0.5px 0px rgba(255,255,255,0.4); 
@@ -80,6 +79,18 @@
             background-repeat: no-repeat;
             background-position: right 8px center;
             background-size: 16px;
+        }
+
+        /* 個別セットリセットボタンのスタイル */
+        .round-clear-btn {
+            background: #333;
+            color: #ff5252;
+            border: 1px solid #444;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
         .btn-grid-screen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
@@ -119,7 +130,10 @@
             <option value="douguchi">洞口</option>
             <option value="monokurohatano">モノクロ</option>
         </select>
-        <div style="margin-bottom:4px;"><b id="editing-label" style="color:var(--accent); font-size:13px;">R1 編集</b></div>
+        <div style="margin-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+            <b id="editing-label" style="color:var(--accent); font-size:13px;">R1 編集</b>
+            <button class="round-clear-btn" onclick="clearCurrentRound()">セット解除</button>
+        </div>
         <div class="btn-grid-screen" id="screen-btns"></div>
         <div class="btn-grid-lamp" id="lamp-btns"></div>
     </div>
@@ -137,7 +151,6 @@
 </div>
 
 <script>
-// --- 以下、ロジック・テキストは一切変えずに保持 ---
 const SCENARIOS = [
     { id: 0, name: "駆け出し", map: [1, 5, 1, 5, 1, 5, 3, 6], p_norm: 13.9, p_dou: 0, p_mono: 0 },
     { id: 1, name: "遅咲き", map: [1, 2, 3, 4, 5, 6, 6, 6], p_norm: 11.1, p_dou: 0, p_mono: 0 },
@@ -238,6 +251,24 @@ function updateLamp(val) {
     const tile = document.getElementById(`lamp-tile-${currentEditIdx}`);
     tile.classList.add('active');
     tile.style.background = LAMPS.find(l => l.v === val).c;
+    calculate();
+}
+
+// 修正：現在の編集中のセットのみリセットする関数
+function clearCurrentRound() {
+    inputs[currentEditIdx] = { screen: null, lamp: null };
+    
+    // ラウンド枠の表示を戻す
+    const box = document.getElementById(`round-view-${currentEditIdx}`);
+    box.classList.remove('active');
+    box.innerHTML = `<span class="round-label">R${currentEditIdx+1}</span>R${currentEditIdx+1}`;
+    
+    // ランプタイルの表示を戻す
+    const tile = document.getElementById(`lamp-tile-${currentEditIdx}`);
+    tile.classList.remove('active');
+    tile.style.background = '#2a2a2a';
+    
+    syncButtons();
     calculate();
 }
 
