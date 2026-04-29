@@ -3,48 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーターンV 解析 PRO</title>
+    <title>モンキーターンV 解析 PRO+</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
-        /* 筐体レイアウトの微調整 */
-        .cabinet { display: grid; grid-template-columns: 80px 1fr 80px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 8px; padding: 8px; box-sizing: border-box; }
+        /* 筐体レイアウト：左右幅を抑えて中央を最大化 */
+        .cabinet { display: grid; grid-template-columns: 75px 1fr 75px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 4px; padding: 4px; box-sizing: border-box; }
 
-        /* 上部ランプ：縦3:横4の横長形状 */
-        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; background: #1a1a1a; padding: 8px; border-radius: 8px; border: 1px solid #333; justify-items: center; }
-        .lamp-tile { width: 40px; height: 30px; border-radius: 4px; background: #2a2a2a; border: 1px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: rgba(255, 255, 255, 0.4); transition: 0.1s; }
-        .lamp-tile.active { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.8); }
-        .lamp-tile.selected { border: 2px solid var(--accent); box-shadow: 0 0 8px var(--accent); }
+        /* 上部ランプ：横長 */
+        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; background: #1a1a1a; padding: 6px; border-radius: 6px; border: 1px solid #333; }
+        .lamp-tile { width: 100%; aspect-ratio: 4 / 3; border-radius: 3px; background: #2a2a2a; border: 1px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px; color: rgba(255, 255, 255, 0.3); }
+        .lamp-tile.active { color: white; }
+        .lamp-tile.selected { border: 2px solid var(--accent); box-shadow: 0 0 6px var(--accent); }
 
-        /* 左右パネル：小型化して視認性向上 */
-        .side-rounds { display: flex; flex-direction: column; gap: 6px; justify-content: space-around; }
-        .round-box { width: 70px; height: 70px; background: #1a1a1a; border: 2px solid #333; border-radius: 4px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #555; cursor: pointer; }
-        .round-box.active { border-color: #666; color: #fff; }
-        .round-box.editing { border-color: var(--accent) !important; box-shadow: 0 0 8px var(--accent); z-index: 10; }
+        /* 左右パネル：隙間を最小限に */
+        .side-rounds { display: flex; flex-direction: column; gap: 2px; justify-content: space-around; }
+        .round-box { width: 70px; height: 75px; background: #161616; border: 1px solid #333; border-radius: 3px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #444; cursor: pointer; }
+        .round-box.active { border-color: #555; }
+        .round-box.editing { border-color: var(--accent) !important; box-shadow: 0 0 8px var(--accent); z-index: 5; }
         .round-box img { width: 100%; height: 100%; object-fit: cover; }
-        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.8); font-size: 9px; padding: 1px 3px; z-index: 2; border-bottom-right-radius: 4px; color: #888; }
+        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.8); font-size: 8px; padding: 1px 3px; z-index: 2; color: #777; }
 
-        /* 中央メインパネル */
-        .center-panel { background: #121212; border: 1px solid #333; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
-        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        /* 中央メイン：上下分割 */
+        .center-panel { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
         
-        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
-        .screen-btn { aspect-ratio: 1; background-size: cover; border: 1px solid #333; border-radius: 4px; cursor: pointer; }
-        .screen-btn.active { border-color: var(--accent); }
-        .lamp-btn { height: 35px; border-radius: 4px; border: 1px solid #000; cursor: pointer; }
+        /* 上 2/3：編集エリア */
+        .editor-section { flex: 2; background: #121212; border: 1px solid #333; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; overflow-y: auto; }
+        
+        /* 下 1/3：推測結果エリア */
+        .results-section { flex: 1; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px; overflow-y: auto; }
 
-        /* 解析結果表示 */
-        .results-container { margin-top: 10px; flex-grow: 1; border-top: 1px solid #2a2a2a; padding-top: 8px; }
-        .res-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+        /* 編集パーツ */
+        .mode-select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; }
+        .btn-grid-screen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .screen-btn { aspect-ratio: 1; background-size: cover; border: 2px solid #333; border-radius: 4px; cursor: pointer; }
+        .screen-btn.active { border-color: var(--accent); }
+        
+        .btn-grid-lamp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; }
+        .lamp-btn { aspect-ratio: 4 / 3; border-radius: 4px; border: 1px solid #000; cursor: pointer; }
+
+        /* 結果リスト：TOP 10 */
+        .res-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #1a1a1a; font-size: 12px; line-height: 1.2; }
+        .res-name { color: #aaa; }
         .res-val { color: var(--accent); font-weight: bold; }
 
-        /* 下部操作ボタン */
-        .footer { grid-column: 1 / 4; padding: 8px; display: flex; gap: 8px; background: #0a0a0a; border-top: 1px solid #222; }
-        .action-btn { flex: 1; background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; }
-        .reset-btn { width: 90px; background: #8e1515; color: #fff; border: none; border-radius: 6px; font-size: 14px; }
-        
-        .placeholder-text { font-size: 9px; text-align: center; line-height: 1.2; }
+        /* フッター操作 */
+        .footer { grid-column: 1 / 4; padding: 6px; display: flex; gap: 6px; background: #000; }
+        .action-btn { flex: 1; background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .reset-btn { width: 80px; background: #7a1212; color: #fff; border: none; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -54,21 +61,21 @@
     <div class="side-rounds left-panel" id="left-rounds"></div>
 
     <div class="center-panel">
-        <select id="helmet" onchange="calculate()">
-            <option value="normal">通常ヘルメット</option>
-            <option value="douguchi">洞口ヘルメット</option>
-            <option value="monokurohatano">モノクロ波多野</option>
-        </select>
-
-        <div id="editor-ui">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
-                <b id="editing-label" style="color:var(--accent); font-size:14px;">ROUND 1 編集</b>
+        <div class="editor-section">
+            <select id="helmet" class="mode-select" onchange="calculate()">
+                <option value="normal">通常ヘルメット</option>
+                <option value="douguchi">洞口ヘルメット</option>
+                <option value="monokurohatano">モノクロ波多野</option>
+            </select>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <b id="editing-label" style="color:var(--accent); font-size:12px;">ROUND 1 編集</b>
             </div>
-            <div class="btn-grid" id="screen-btns"></div>
-            <div class="btn-grid" style="grid-template-columns: repeat(6, 1fr); margin-top:10px;" id="lamp-btns"></div>
+            <div class="btn-grid-screen" id="screen-btns"></div>
+            <div class="btn-grid-lamp" id="lamp-btns"></div>
         </div>
 
-        <div class="results-container">
+        <div class="results-section">
+            <div style="font-size:10px; color:#666; margin-bottom:4px; border-bottom:1px solid #333;">推測シナリオ TOP 10</div>
             <div id="results-list"></div>
         </div>
     </div>
@@ -103,8 +110,8 @@ const SCREENS = [
     {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口Jr'}, {id:'gamou', n:'蒲生'},
     {id:'hamaoka', n:'浜岡'}, {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'洞口親父'}, {id:'arisa', n:'ありさ'},
     {id:'kakotachi', n:'香子たち'}, {id:'aoshima', n:'青島'}, {id:'kusidatachi', n:'櫛田'}, {id:'sumi', n:'澄'},
-    {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'}, {id:'joseisyuugou', n:'女性キャラ集'},
-    {id:'monokurohatano', n:'モノクロ波多野'}, {id:'monokuroenoki', n:'モノクロ榎木'}, {id:'hatanosumi', n:'波多野&澄'}
+    {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'}, {id:'joseisyuugou', n:'女性集'},
+    {id:'monokurohatano', n:'モノ波多野'}, {id:'monokuroenoki', n:'モノ榎木'}, {id:'hatanosumi', n:'波多野&澄'}
 ];
 
 const SCREEN_PROBS = {
@@ -143,7 +150,7 @@ function init() {
         const box = document.createElement('div');
         box.className = 'round-box'; box.id = `round-view-${i}`;
         box.onclick = () => setEditTarget(i);
-        box.innerHTML = `<span class="round-label">R${i+1}</span><div class="placeholder-text">Round ${i+1}</div>`;
+        box.innerHTML = `<span class="round-label">R${i+1}</span><div style="text-align:center">Round ${i+1}</div>`;
         if(i < 4) left.appendChild(box); else right.appendChild(box);
 
         const tile = document.createElement('div');
@@ -269,19 +276,19 @@ function calculate() {
     if (total === 0) { list.innerHTML = '<div style="color:#ff5252; text-align:center;">矛盾</div>'; return; }
 
     SCENARIOS.map((s, i) => ({ n: s.name, pb: (probs[i] / total) * 100 }))
-        .sort((a, b) => b.pb - a.pb).filter(x => x.pb > 0.1).slice(0, 5)
+        .sort((a, b) => b.pb - a.pb).filter(x => x.pb > 0.1).slice(0, 10)
         .forEach(d => {
-            list.innerHTML += `<div class="res-item"><span>${d.n}</span><span class="res-val">${d.pb.toFixed(1)}%</span></div>`;
+            list.innerHTML += `<div class="res-item"><span class="res-name">${d.n}</span><span class="res-val">${d.pb.toFixed(1)}%</span></div>`;
         });
 }
 
 function confirmReset() {
-    if(confirm("全データをリセットしますか？")) {
+    if(confirm("リセットしますか？")) {
         inputs = Array(8).fill(null).map(() => ({ screen: null, lamp: null }));
         for(let i=0; i<8; i++) {
             const box = document.getElementById(`round-view-${i}`);
             box.classList.remove('active');
-            box.innerHTML = `<span class="round-label">R${i+1}</span><div class="placeholder-text">Round ${i+1}</div>`;
+            box.innerHTML = `<span class="round-label">R${i+1}</span><div style="text-align:center">Round ${i+1}</div>`;
             const tile = document.getElementById(`lamp-tile-${i}`);
             tile.classList.remove('active');
             tile.style.background = '#2a2a2a';
