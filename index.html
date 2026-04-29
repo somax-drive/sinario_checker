@@ -3,94 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>モンキーターンV シナリオ解析ツール PRO</title>
+    <title>モンキーターンV 解析ツール PRO+ (実機風UI版)</title>
     <style>
         :root { --bg: #050505; --card: #121212; --text: #d1d1d1; --accent: #00e676; --border: #2a2a2a; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
         
         /* 筐体風レイアウト */
-        .cabinet { display: grid; grid-template-columns: 80px 1fr 80px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 5px; padding: 5px; box-sizing: border-box; }
+        .cabinet { display: grid; grid-template-columns: 100px 1fr 100px; grid-template-rows: auto 1fr auto; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
 
-        /* 上部：ランプ表示エリア */
-        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; background: #1a1a1a; padding: 10px; border-radius: 8px; border: 1px solid #333; }
-        .lamp-dot { height: 12px; border-radius: 2px; background: #333; border: 1px solid #000; }
+        /* 上部ランプ：入力したランプを表示 */
+        .top-lamps { grid-column: 1 / 4; display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; background: #1a1a1a; padding: 10px; border-radius: 12px; border: 2px solid #333; }
+        .lamp-tile { width: 30px; height: 40px; border-radius: 4px; background: #333; border: 1px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255, 255, 255, 0.7); text-shadow: 1px 1px 2px black; transition: 0.1s; }
+        .lamp-tile.active { color: white; }
+        .lamp-tile.selected { border: 2px solid var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-        /* サイド：ラウンド画面表示エリア */
-        .side-rounds { display: flex; flex-direction: column; gap: 8px; justify-content: space-around; }
-        .round-box { width: 70px; height: 70px; background: #222; border: 2px solid #444; border-radius: 4px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; }
-        .round-box.active { border-color: var(--accent); color: #fff; }
+        /* サイドパネル：実機の左右スピーカーを模倣 */
+        .side-rounds { display: flex; flex-direction: column; gap: 10px; justify-content: space-around; }
+        .round-box { width: 90px; height: 90px; background: #222; border: 3px solid #444; border-radius: 6px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; cursor: pointer; }
+        .round-box.active { border-color: #888; color: #fff; }
+        .round-box.editing { border-color: var(--accent) !important; box-shadow: 0 0 12px var(--accent); transform: scale(1.05); z-index: 10; }
         .round-box img { width: 100%; height: 100%; object-fit: cover; }
-        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.7); font-size: 9px; padding: 1px 3px; z-index: 2; }
+        .round-label { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.8); font-size: 10px; padding: 2px 6px; z-index: 2; border-bottom-right-radius: 6px; }
+        .side-rounds.left-panel { background: radial-gradient(circle at left, #1a1a1a 0%, #121212 100%); }
+        .side-rounds.right-panel { background: radial-gradient(circle at right, #1a1a1a 0%, #121212 100%); }
 
-        /* 中央：メイン操作パネル */
-        .main-panel { background: #121212; border: 1px solid #333; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
-        
-        /* フォーム要素 */
-        .input-group { margin-bottom: 15px; }
-        select, button { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 6px; font-size: 12px; }
-        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 5px; }
-        .screen-btn { aspect-ratio: 1; background-size: cover; border: 1px solid #333; border-radius: 4px; }
-        .lamp-btn { height: 30px; border-radius: 4px; border: none; }
+        /* 中央メインパネル：シナリオ表と液晶を模倣 */
+        .center-panel { background: #121212; border: 2px solid #333; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
+        select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; border-radius: 8px; font-size: 16px; margin-bottom: 15px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 5px; }
+        .screen-btn { aspect-ratio: 1; background-size: cover; border: 2px solid #333; border-radius: 6px; cursor: pointer; }
+        .screen-btn.active { border-color: var(--accent); }
+        .lamp-btn { height: 40px; border-radius: 6px; border: 1px solid #000; cursor: pointer; }
 
         /* 解析結果表示 */
-        .results-container { margin-top: 10px; flex-grow: 1; border-top: 1px solid #333; padding-top: 10px; }
-        .res-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #222; font-size: 13px; }
+        .results-container { margin-top: 20px; flex-grow: 1; border-top: 2px solid #333; padding-top: 15px; }
+        .res-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 16px; }
         .res-val { color: var(--accent); font-weight: bold; }
 
         /* 下部ボタン */
-        .footer { grid-column: 1 / 4; padding: 5px; display: flex; gap: 5px; }
-        .action-btn { flex: 1; background: var(--accent); color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 6px; }
-        .reset-btn { width: 80px; background: #444; color: #fff; border: none; border-radius: 6px; font-size: 11px; }
-
-        .hidden { display: none; }
+        .footer { grid-column: 1 / 4; padding: 10px 15px; display: flex; gap: 15px; background: #1a1a1a; border-top: 2px solid #333; }
+        .action-btn { flex: 1; background: #333; color: #fff; border: 1px solid #555; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; }
+        .reset-btn { width: 120px; background: #b71c1c; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="cabinet">
-    <div class="top-lamps" id="lamp-display">
-        </div>
+    <div class="top-lamps" id="lamp-display"></div>
 
-    <div class="side-rounds" id="left-rounds"></div>
+    <div class="side-rounds left-panel" id="left-rounds"></div>
 
-    <div class="main-panel">
-        <div class="input-group">
-            <span style="font-size:11px; color:#888;">ヘルメット</span>
-            <select id="helmet" onchange="calculate()">
-                <option value="normal">通常</option>
-                <option value="douguchi">洞口</option>
-                <option value="monokurohatano">モノクロ</option>
-            </select>
-        </div>
+    <div class="center-panel">
+        <select id="helmet" onchange="calculate()">
+            <option value="normal">通常ヘルメット</option>
+            <option value="douguchi">洞口ヘルメット</option>
+            <option value="monokurohatano">モノクロ波多野</option>
+        </select>
 
-        <div id="input-controls">
-            <div style="font-size:12px; font-weight:bold; color:var(--accent);" id="current-set-label">ROUND 1 入力</div>
-            <div class="input-section">
-                <span style="font-size:10px; color:#666;">開始画面を選択</span>
-                <div class="btn-grid" id="screen-btns"></div>
+        <div id="editor-ui">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b id="editing-label" style="color:var(--accent); font-size:16px;">ROUND 1 編集</b>
+                <span style="font-size:12px; color:#888;">枠タップで切替</span>
             </div>
-            <div class="input-section" style="margin-top:10px;">
-                <span style="font-size:10px; color:#666;">レース中ランプを選択</span>
-                <div class="btn-grid" style="grid-template-columns: repeat(6, 1fr);" id="lamp-btns"></div>
-            </div>
+            
+            <div class="btn-grid" id="screen-btns"></div>
+            
+            <div class="btn-grid" style="grid-template-columns: repeat(6, 1fr); margin-top:15px;" id="lamp-btns"></div>
         </div>
 
         <div class="results-container">
-            <div style="font-size:11px; color:#888; margin-bottom:5px;">推測シナリオ (TOP5)</div>
             <div id="results-list"></div>
         </div>
     </div>
 
-    <div class="side-rounds" id="right-rounds"></div>
+    <div class="side-rounds right-panel" id="right-rounds"></div>
 
     <div class="footer">
-        <button class="reset-btn" onclick="resetAll()">リセット</button>
-        <button class="action-btn" onclick="removeLastSet()">1つ戻る</button>
+        <button class="reset-btn" onclick="confirmReset()">リセット</button>
+        <button class="action-btn" onclick="selectNext()">次のセットへ</button>
     </div>
 </div>
 
 <script>
-// --- データ定義 ---
+// --- データ定義は前回と同じ ---
 const SCENARIOS = [
     { id: 0, name: "駆け出し", map: [1, 5, 1, 5, 1, 5, 3, 6], p_norm: 13.9, p_dou: 0, p_mono: 0 },
     { id: 1, name: "遅咲き", map: [1, 2, 3, 4, 5, 6, 6, 6], p_norm: 11.1, p_dou: 0, p_mono: 0 },
@@ -112,6 +107,7 @@ const SCREENS = [
     {id:'hatano', n:'波多野'}, {id:'enoki', n:'榎木'}, {id:'douguchi', n:'洞口Jr'}, {id:'gamou', n:'蒲生'},
     {id:'hamaoka', n:'浜岡'}, {id:'koike', n:'古池'}, {id:'douguchioyaji', n:'洞口親父'}, {id:'arisa', n:'ありさ'},
     {id:'kakotachi', n:'香子たち'}, {id:'aoshima', n:'青島'}, {id:'kusidatachi', n:'櫛田'}, {id:'sumi', n:'澄'},
+    {id:'sensyusyuugou', n:'選手集合'}, {id:'hatanoke', n:'波多野家'}, {id:'82kisei', n:'82期生'}, {id:'joseisyuugou', n:'女性キャラ集'},
     {id:'monokurohatano', n:'モノクロ波多野'}, {id:'monokuroenoki', n:'モノクロ榎木'}, {id:'hatanosumi', n:'波多野&澄'}
 ];
 
@@ -128,166 +124,197 @@ const SCREEN_PROBS = {
     aoshima: [0,0,0,0,10,4,25,8,10,7.5,4.5,0.2,0.5,3.5],
     kusidatachi: [0,0,0,0,0,3.5,7.5,8.5,0,5.5,4.5,0.2,0.5,3.5],
     sumi: [0,0,0,0,0,0,0,0,0,0,4.5,0,0,8],
+    sensyusyuugou: [0,0,0,0,0,0,7.5,6.5,0,5.5,5,0.2,0.5,5],
+    hatanoke: [0,0,0,0,0,0,0,0,0,5.5,5,0.3,0.5,5],
+    '82kisei': [0,0,0,0,0,0,0,5,0,0,5,0.2,0.5,5],
+    joseisyuugou: [0,0,0,0,0,0,0,0,0,0,5,0,0,5],
     monokurohatano: [0,0,0,0,0,0,0,0,0,0,0,80,0,5],
     monokuroenoki: [0,0,0,0,0,0,0,0,0,0,0,0,40,2.5],
     hatanosumi: [0,0,0,0,0,0,0,0,0,0,0,0,0,14.5]
 };
 
-const LAMPS = [ 
-    {v:1, c:'#fff', n:'白'}, {v:2, c:'#2196f3', n:'青'}, {v:3, c:'#ffeb3b', n:'黄'}, 
-    {v:4, c:'#4caf50', n:'緑'}, {v:5, c:'#f44336', n:'赤'}, {v:6, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)', n:'虹'} 
-];
+const LAMPS = [{v:1, c:'#fff'}, {v:2, c:'#2196f3'}, {v:3, c:'#ffeb3b'}, {v:4, c:'#4caf50'}, {v:5, c:'#f44336'}, {v:6, c:'linear-gradient(45deg,red,orange,yellow,green,cyan,blue,violet)'}];
 
 // --- 状態管理 ---
-let userInputs = [];
-let currentScreen = null;
+let currentEditIdx = 0;
+let inputs = Array(8).fill(null).map(() => ({ screen: null, lamp: null }));
 
 // --- 初期化 ---
 function init() {
-    // 左右のラウンド枠を生成
     const left = document.getElementById('left-rounds');
     const right = document.getElementById('right-rounds');
     const lampBar = document.getElementById('lamp-display');
 
     for(let i=0; i<8; i++) {
+        // ラウンド画面表示枠
         const box = document.createElement('div');
         box.className = 'round-box';
         box.id = `round-view-${i}`;
-        box.innerHTML = `<span class="round-label">R${i+1}</span><span id="img-slot-${i}">未入力</span>`;
+        box.onclick = () => setEditTarget(i);
+        box.innerHTML = `<span class="round-label">R${i+1}</span><div class="screen-placeholder">SG</div>`;
         if(i < 4) left.appendChild(box); else right.appendChild(box);
 
-        const dot = document.createElement('div');
-        dot.className = 'lamp-dot';
-        dot.id = `lamp-dot-${i}`;
-        lampBar.appendChild(dot);
+        // 上部ランプインジケーター (3:4比率の矩形、SGテキスト入り)
+        const tile = document.createElement('div');
+        tile.className = 'lamp-tile';
+        tile.id = `lamp-tile-${i}`;
+        tile.onclick = (e) => { e.stopPropagation(); setEditTarget(i); };
+        tile.innerHTML = `<span>SG</span>`;
+        lampBar.appendChild(tile);
     }
 
-    // 入力ボタン生成
+    // 入力ボタン生成 (画面)
     const sGrid = document.getElementById('screen-btns');
     SCREENS.forEach(s => {
         const btn = document.createElement('div');
         btn.className = 'screen-btn';
-        btn.style.backgroundImage = `url('start_screen/${s.id}.webp')`;
-        btn.onclick = () => { currentScreen = s.id; updateSelectionUI(); };
         btn.id = `btn-s-${s.id}`;
+        btn.style.backgroundImage = `url('start_screen/${s.id}.webp')`;
+        btn.onclick = () => updateScreen(s.id);
         sGrid.appendChild(btn);
     });
 
+    // 入力ボタン生成 (ランプ)
     const lGrid = document.getElementById('lamp-btns');
     LAMPS.forEach(l => {
         const btn = document.createElement('button');
         btn.className = 'lamp-btn';
         btn.style.background = l.c;
-        btn.onclick = () => confirmInput(l.v);
+        btn.onclick = () => updateLamp(l.v);
         lGrid.appendChild(btn);
     });
 
+    setEditTarget(0);
     calculate();
 }
 
-function updateSelectionUI() {
-    document.querySelectorAll('.screen-btn').forEach(b => b.style.borderColor = '#333');
-    if(currentScreen) document.getElementById(`btn-s-${currentScreen}`).style.borderColor = 'var(--accent)';
+// 編集対象のセットを切り替え
+function setEditTarget(idx) {
+    currentEditIdx = idx;
+    document.querySelectorAll('.round-box, .lamp-tile').forEach(el => el.classList.remove('editing', 'selected'));
+    document.getElementById(`round-view-${idx}`).classList.add('editing');
+    document.getElementById(`lamp-tile-${idx}`).classList.add('selected');
+    document.getElementById('editing-label').innerText = `ROUND ${idx + 1} 編集`;
+    syncButtons();
 }
 
-function confirmInput(lampVal) {
-    if(!currentScreen) { alert("開始画面を先に選んでください"); return; }
-    
-    userInputs.push({ screen: currentScreen, lamp: lampVal });
-    
-    // UI更新
-    const idx = userInputs.length - 1;
-    const view = document.getElementById(`round-view-${idx}`);
-    view.classList.add('active');
-    view.innerHTML = `<span class="round-label">R${idx+1}</span><img src="start_screen/${currentScreen}.webp">`;
-    
-    const dot = document.getElementById(`lamp-dot-${idx}`);
-    dot.style.background = LAMPS.find(l => l.v === lampVal).c;
-
-    // 次へ
-    currentScreen = null;
-    updateSelectionUI();
-    
-    if(userInputs.length >= 8) {
-        document.getElementById('input-controls').classList.add('hidden');
-    } else {
-        document.getElementById('current-set-label').innerText = `ROUND ${userInputs.length + 1} 入力`;
-    }
-    
+// 開始画面を入力
+function updateScreen(id) {
+    inputs[currentEditIdx].screen = id;
+    const box = document.getElementById(`round-view-${currentEditIdx}`);
+    box.classList.add('active');
+    box.innerHTML = `<span class="round-label">R${currentEditIdx+1}</span><img src="start_screen/${id}.webp">`;
+    syncButtons();
     calculate();
 }
 
-function removeLastSet() {
-    if(userInputs.length === 0) return;
-    const idx = userInputs.length - 1;
-    
-    // UIを戻す
-    const view = document.getElementById(`round-view-${idx}`);
-    view.classList.remove('active');
-    view.innerHTML = `<span class="round-label">R${idx+1}</span>未入力`;
-    document.getElementById(`lamp-dot-${idx}`).style.background = '#333';
-    
-    userInputs.pop();
-    document.getElementById('input-controls').classList.remove('hidden');
-    document.getElementById('current-set-label').innerText = `ROUND ${userInputs.length + 1} 入力`;
+// レース中ランプを入力 (上部ランプを更新)
+function updateLamp(val) {
+    inputs[currentEditIdx].lamp = val;
+    const tile = document.getElementById(`lamp-tile-${currentEditIdx}`);
+    tile.classList.add('active');
+    tile.style.background = LAMPS.find(l => l.v === val).c;
     calculate();
 }
 
+function selectNext() {
+    if(currentEditIdx < 7) setEditTarget(currentEditIdx + 1);
+}
+
+// 入力ボタンの状態を同期
+function syncButtons() {
+    document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+    const currentId = inputs[currentEditIdx].screen;
+    if(currentId) document.getElementById(`btn-s-${currentId}`).classList.add('active');
+}
+
+// 解析・計算ロジック (虹ランプ、R8答え合わせ対応版)
 function calculate() {
     const mode = document.getElementById('helmet').value;
     let probs = SCENARIOS.map(s => (mode==='douguchi' ? s.p_dou : (mode==='monokurohatano' ? s.p_mono : s.p_norm)));
 
-    for (let i = 0; i < userInputs.length; i++) {
-        const input = userInputs[i];
+    inputs.forEach((input, i) => {
+        if(!input.screen && !input.lamp) return;
+        
         probs = probs.map((p, si) => {
             if (p === 0) return 0;
             const scenario = SCENARIOS[si];
             const mapVal = scenario.map[i];
 
-            // ランプ判定
-            if (i === 7) { if (input.lamp !== 6) return 0; }
-            else if (input.lamp === 6) {
-                if (i === 0 && si !== 13) return 0;
-                // ... (他の虹判定ロジックもここに適用)
-            } else {
-                if (input.lamp > (mapVal === 6 ? 5 : mapVal)) return 0;
+            // --- ランプ色判定 (虹ランプ絞り込みロジックを含む) ---
+            if(input.lamp) {
+                if (i === 7) { if (input.lamp !== 6) return 0; }
+                else if (input.lamp === 6) {
+                    if (i === 0 && si !== 13) return 0;
+                    if (i === 1) {
+                        const l1 = inputs[0].lamp;
+                        if (l1 !== 1 && l1 !== null && si !== 13) return 0;
+                        if (l1 === 1 && ![11, 13].includes(si)) return 0;
+                    }
+                    if (i >= 2) {
+                        const l1 = inputs[0].lamp; const l2 = inputs[1].lamp;
+                        if (l1 !== 1 && l1 !== null && l2 !== 1 && l2 !== null && si !== 13) return 0;
+                        if (l2 === 1 && ![12, 13].includes(si)) return 0;
+                        if (![11, 12, 13].includes(si)) return 0;
+                    }
+                } else {
+                    if (input.lamp > (mapVal === 6 ? 5 : mapVal)) return 0;
+                }
             }
 
-            // 画面判定
-            if (SCREEN_PROBS[input.screen][si] === 0) return 0;
-            return p * SCREEN_PROBS[input.screen][si];
+            // --- ラウンド開始画面判定 (R8答え合わせロジックを含む) ---
+            if(input.screen) {
+                if (i === 7) {
+                    const blueChars = ['hatano','enoki','douguchi','gamou','hamaoka','koike','douguchioyaji'];
+                    const r8Map = {
+                        'hatano': 3, 'enoki': 12, 'douguchi': 7, 'gamou': 9, 'hamaoka': 4,
+                        'koike': 2, 'douguchioyaji': 10, 'arisa': 5, 'kakotachi': 8, 'aoshima': 6,
+                        'monokurohatano': 11, 'monokuroenoki': 12, 'hatanosumi': 13,
+                        'sumi': [10, 13], 'sensyusyuugou': [6, 7], 'hatanoke': [9, 10, 11, 12, 13],
+                        '82kisei': [7, 10, 13], 'joseisyuugou': [10, 13]
+                    };
+                    if (si === 0 || si === 1) { return blueChars.includes(input.screen) ? p * (1/7) : 0; }
+                    else {
+                        const target = r8Map[input.screen];
+                        if (Array.isArray(target)) { return target.includes(si) ? p : 0; }
+                        else { return target === si ? p : 0; }
+                    }
+                } else {
+                    if (SCREEN_PROBS[input.screen][si] === 0) return 0;
+                    return p * SCREEN_PROBS[input.screen][si];
+                }
+            }
+            return p;
         });
-    }
+    });
 
     const total = probs.reduce((a, b) => a + b, 0);
     const list = document.getElementById('results-list');
     list.innerHTML = '';
-
-    if (total === 0) { list.innerHTML = '<div style="color:red">矛盾</div>'; return; }
+    if (total === 0) { list.innerHTML = '<div style="color:#ff5252; text-align:center;">矛盾</div>'; return; }
 
     SCENARIOS.map((s, i) => ({ n: s.name, pb: (probs[i] / total) * 100 }))
-        .sort((a, b) => b.pb - a.pb)
-        .filter(x => x.pb > 0.1)
-        .slice(0, 5)
+        .sort((a, b) => b.pb - a.pb).filter(x => x.pb > 0.1).slice(0, 5)
         .forEach(d => {
             list.innerHTML += `<div class="res-item"><span>${d.n}</span><span class="res-val">${d.pb.toFixed(1)}%</span></div>`;
         });
 }
 
-function resetAll() {
-    userInputs = [];
-    currentScreen = null;
-    document.getElementById('input-controls').classList.remove('hidden');
-    for(let i=0; i<8; i++) {
-        const view = document.getElementById(`round-view-${i}`);
-        view.classList.remove('active');
-        view.innerHTML = `<span class="round-label">R${i+1}</span>未入力`;
-        document.getElementById(`lamp-dot-${i}`).style.background = '#333';
+function confirmReset() {
+    if(confirm("全データをリセットしますか？")) {
+        inputs = Array(8).fill(null).map(() => ({ screen: null, lamp: null }));
+        for(let i=0; i<8; i++) {
+            const box = document.getElementById(`round-view-${i}`);
+            box.classList.remove('active');
+            box.innerHTML = `<span class="round-label">R${i+1}</span><div class="screen-placeholder">SG</div>`;
+            const tile = document.getElementById(`lamp-tile-${i}`);
+            tile.classList.remove('active');
+            tile.style.background = '#333';
+        }
+        setEditTarget(0);
+        calculate();
     }
-    document.getElementById('current-set-label').innerText = `ROUND 1 入力`;
-    calculate();
 }
-
 init();
 </script>
 </body>
